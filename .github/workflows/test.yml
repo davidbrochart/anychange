@@ -1,0 +1,56 @@
+name: test
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+
+jobs:
+  test:
+    name: test py${{ matrix.python-version }} on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu, macos, windows]
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
+
+    runs-on: ${{ matrix.os }}-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: set up python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - run: pip install --group dev .
+    - run: pip freeze
+
+    - name: run tests
+      if: ${{ !((matrix.python-version == '3.13') && (matrix.os == 'ubuntu-latest')) }}
+      run: pytest --color=yes -v tests
+    - name: Run code coverage
+      if: ${{ (matrix.python-version == '3.13') && (matrix.os == 'ubuntu-latest') }}
+      run: |
+        coverage run -m pytest --color=yes -v
+        coverage report --show-missing --fail-under=100
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+
+    - run: pip install --group lint .
+    - run: pip freeze
+
+    - run: ruff check anychange
+    - run: mypy anychange
