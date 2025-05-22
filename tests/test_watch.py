@@ -7,7 +7,7 @@ from time import sleep
 import anyio
 import pytest
 
-from watchgod import AllWatcher, Change, DefaultWatcher, PythonWatcher, RegExpWatcher, awatch, watch
+from anychange import AllWatcher, Change, DefaultWatcher, PythonWatcher, RegExpWatcher, awatch, watch
 
 from .conftest import mktree
 
@@ -368,7 +368,7 @@ def test_watch_keyboard_error():
 
 
 def test_watch_log(mocker, caplog):
-    mock_log_enabled = mocker.patch('watchgod.main.logger.isEnabledFor')
+    mock_log_enabled = mocker.patch('anychange.main.logger.isEnabledFor')
     mock_log_enabled.return_value = True
 
     class FakeWatcher:
@@ -433,7 +433,7 @@ async def test_awatch_stop():
 
 @skip_unless_linux
 async def test_awatch_log(mocker, caplog):
-    mock_log_enabled = mocker.patch('watchgod.main.logger.isEnabledFor')
+    mock_log_enabled = mocker.patch('anychange.main.logger.isEnabledFor')
     mock_log_enabled.return_value = True
 
     class FakeWatcher:

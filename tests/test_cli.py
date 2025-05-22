@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from watchgod.cli import callback, cli, run_function, set_tty, sys_argv
+from anychange.cli import callback, cli, run_function, set_tty, sys_argv
 
 pytestmark = pytest.mark.skipif(sys.platform == 'win32', reason='many tests fail on windows')
 
@@ -19,10 +19,10 @@ def with_parser():
 
 
 def test_simple(mocker, tmp_path):
-    mocker.patch('watchgod.cli.set_start_method')
-    mocker.patch('watchgod.cli.sys.stdin.fileno')
+    mocker.patch('anychange.cli.set_start_method')
+    mocker.patch('anychange.cli.sys.stdin.fileno')
     mocker.patch('os.ttyname', return_value='/path/to/tty')
-    mock_run_process = mocker.patch('watchgod.cli.run_process')
+    mock_run_process = mocker.patch('anychange.cli.run_process')
     cli('tests.test_cli.foobar', str(tmp_path))
     mock_run_process.assert_called_once_with(
         tmp_path,
@@ -34,10 +34,10 @@ def test_simple(mocker, tmp_path):
 
 
 def test_ignore(mocker, tmp_work_path):
-    mocker.patch('watchgod.cli.set_start_method')
-    mocker.patch('watchgod.cli.sys.stdin.fileno')
+    mocker.patch('anychange.cli.set_start_method')
+    mocker.patch('anychange.cli.sys.stdin.fileno')
     mocker.patch('os.ttyname', return_value='/path/to/tty')
-    mock_run_process = mocker.patch('watchgod.cli.run_process')
+    mock_run_process = mocker.patch('anychange.cli.run_process')
     cli(
         'tests.test_cli.foobar',
         str(tmp_work_path),
@@ -60,7 +60,7 @@ def test_ignore(mocker, tmp_work_path):
 
 
 def test_invalid_import1(mocker, tmp_work_path, capsys):
-    sys_exit = mocker.patch('watchgod.cli.sys.exit')
+    sys_exit = mocker.patch('anychange.cli.sys.exit')
     cli('foobar')
     sys_exit.assert_called_once_with(1)
     out, err = capsys.readouterr()
@@ -69,7 +69,7 @@ def test_invalid_import1(mocker, tmp_work_path, capsys):
 
 
 def test_invalid_import2(mocker, tmp_work_path, capsys):
-    sys_exit = mocker.patch('watchgod.cli.sys.exit')
+    sys_exit = mocker.patch('anychange.cli.sys.exit')
     cli('pprint.foobar')
     sys_exit.assert_called_once_with(1)
     out, err = capsys.readouterr()
@@ -78,7 +78,7 @@ def test_invalid_import2(mocker, tmp_work_path, capsys):
 
 
 def test_invalid_path(mocker, capsys):
-    sys_exit = mocker.patch('watchgod.cli.sys.exit')
+    sys_exit = mocker.patch('anychange.cli.sys.exit')
     cli('tests.test_cli.foobar', '/does/not/exist')
     sys_exit.assert_called_once_with(1)
     out, err = capsys.readouterr()
@@ -87,9 +87,9 @@ def test_invalid_path(mocker, capsys):
 
 
 def test_tty_os_error(mocker, tmp_work_path):
-    mocker.patch('watchgod.cli.set_start_method')
-    mocker.patch('watchgod.cli.sys.stdin.fileno', side_effect=OSError)
-    mock_run_process = mocker.patch('watchgod.cli.run_process')
+    mocker.patch('anychange.cli.set_start_method')
+    mocker.patch('anychange.cli.sys.stdin.fileno', side_effect=OSError)
+    mock_run_process = mocker.patch('anychange.cli.run_process')
     cli('tests.test_cli.foobar')
     mock_run_process.assert_called_once_with(
         tmp_work_path,
@@ -101,9 +101,9 @@ def test_tty_os_error(mocker, tmp_work_path):
 
 
 def test_tty_attribute_error(mocker, tmp_work_path):
-    mocker.patch('watchgod.cli.set_start_method')
-    mocker.patch('watchgod.cli.sys.stdin.fileno', side_effect=AttributeError)
-    mock_run_process = mocker.patch('watchgod.cli.run_process')
+    mocker.patch('anychange.cli.set_start_method')
+    mocker.patch('anychange.cli.sys.stdin.fileno', side_effect=AttributeError)
+    mock_run_process = mocker.patch('anychange.cli.run_process')
     cli('tests.test_cli.foobar', str(tmp_work_path))
     mock_run_process.assert_called_once_with(
         tmp_work_path,
@@ -129,7 +129,7 @@ def test_run_function_tty(tmp_work_path):
 
 def test_callback(mocker):
     # boring we have to test this directly, but we do
-    mock_logger = mocker.patch('watchgod.cli.logger.info')
+    mock_logger = mocker.patch('anychange.cli.logger.info')
     callback({1, 2, 3})
     mock_logger.assert_called_once_with('%d files changed, reloading', 3)
 
@@ -161,9 +161,9 @@ def test_sys_argv(initial, expected, mocker):
 def test_func_with_parser(tmp_work_path, mocker, initial, expected):
     # setup
     mocker.patch('sys.argv', ['foo.py', *initial])
-    mocker.patch('watchgod.cli.set_start_method')
-    mocker.patch('watchgod.cli.sys.stdin.fileno', side_effect=AttributeError)
-    mock_run_process = mocker.patch('watchgod.cli.run_process')
+    mocker.patch('anychange.cli.set_start_method')
+    mocker.patch('anychange.cli.sys.stdin.fileno', side_effect=AttributeError)
+    mock_run_process = mocker.patch('anychange.cli.run_process')
     # test
     assert not (tmp_work_path / 'sentinel').exists()
     cli('tests.test_cli.with_parser', str(tmp_work_path))  # run til mock_run_process

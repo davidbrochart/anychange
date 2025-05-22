@@ -13,7 +13,7 @@ import anyio
 from .watcher import DefaultWatcher, PythonWatcher
 
 __all__ = 'watch', 'awatch', 'run_process', 'arun_process'
-logger = logging.getLogger('watchgod.main')
+logger = logging.getLogger('anychange.main')
 
 if TYPE_CHECKING:
     import asyncio
@@ -68,7 +68,6 @@ class awatch:
         '_normal_sleep',
         '_w',
         'lock',
-        '_thread_limiter',
     )
 
     def __init__(
@@ -82,7 +81,6 @@ class awatch:
         min_sleep: int = 50,
         stop_event: Optional['AnyEvent'] = None,
     ) -> None:
-        self._thread_limiter: Optional[anyio.CapacityLimiter] = None
         self._path = path
         self._watcher_cls = watcher_cls
         self._watcher_kwargs = watcher_kwargs or dict()
@@ -100,9 +98,8 @@ class awatch:
         if self._w:
             watcher = self._w
         else:
-            watcher = self._w = await self.run_in_executor(
-                functools.partial(self._watcher_cls, self._path, **self._watcher_kwargs)
-            )
+            watcher = self._w = self._watcher_cls(self._path, **self._watcher_kwargs)
+            await watcher.check()
         check_time = 0
         changes: 'FileChanges' = set()
         last_change = 0
@@ -121,7 +118,7 @@ class awatch:
                     await anyio.sleep(sleep_time / 1000)
 
                 s = unix_ms()
-                new_changes = await self.run_in_executor(watcher.check)
+                new_changes = await watcher.check()
                 changes.update(new_changes)
                 now = unix_ms()
                 check_time = now - s
@@ -140,11 +137,6 @@ class awatch:
                 if changes and (not new_changes or debounced > self._debounce):
                     logger.debug('%s changes released debounced=%0.0fms', self._path, debounced)
                     return changes
-
-    async def run_in_executor(self, func: 'AnyCallable', *args: Any) -> Any:
-        if self._thread_limiter is None:
-            self._thread_limiter = anyio.CapacityLimiter(4)
-        return await anyio.to_thread.run_sync(func, *args, limiter=self._thread_limiter)
 
 
 def _start_process(target: 'AnyCallable', args: Tuple[Any, ...], kwargs: Optional[Dict[str, Any]]) -> 'SpawnProcess':

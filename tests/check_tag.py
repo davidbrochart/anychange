@@ -2,7 +2,7 @@
 import os
 import sys
 
-from watchgod.version import VERSION
+from anychange.version import VERSION
 
 git_tag = os.getenv('TRAVIS_TAG')
 if git_tag:

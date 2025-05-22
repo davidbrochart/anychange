@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := all
-isort = isort watchgod tests setup.py
-black = black -S -l 120 --target-version py38 watchgod tests setup.py
+isort = isort anychange tests setup.py
+black = black -S -l 120 --target-version py38 anychange tests setup.py
 
 .PHONY: install
 install:
@@ -20,17 +20,17 @@ format:
 .PHONY: lint
 lint:
 	python setup.py check -ms
-	flake8 watchgod/ tests/ setup.py
+	flake8 anychange/ tests/ setup.py
 	$(isort) --check-only --df
 	$(black) --check --diff
 
 .PHONY: mypy
 mypy:
-	mypy watchgod
+	mypy anychange
 
 .PHONY: test
 test:
-	pytest --cov=watchgod --log-format="%(levelname)s %(message)s"
+	pytest --cov=anychange --log-format="%(levelname)s %(message)s"
 
 .PHONY: testcov
 testcov: test

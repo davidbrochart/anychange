@@ -10,7 +10,7 @@ from typing import Any, Dict, Generator, List, Optional, Sized
 
 from .main import run_process
 
-logger = logging.getLogger('watchgod.cli')
+logger = logging.getLogger('anychange.cli')
 
 
 def import_string(dotted_path: str) -> Any:
@@ -57,7 +57,7 @@ def callback(changes: Sized) -> None:
 
 def sys_argv(function: str) -> List[str]:
     """
-    Remove watchgod-related arguments from sys.argv and prepend with func's script path.
+    Remove anychange-related arguments from sys.argv and prepend with func's script path.
     """
     bases_ = function.split('.')[:-1]  # remove function and leave only file path
     base = os.path.join(*bases_) + '.py'
@@ -71,7 +71,7 @@ def sys_argv(function: str) -> List[str]:
 def cli(*args_: str) -> None:
     args = args_ or sys.argv[1:]
     parser = argparse.ArgumentParser(
-        prog='watchgod', description='Watch a directory and execute a python function on changes.'
+        prog='anychange', description='Watch a directory and execute a python function on changes.'
     )
     parser.add_argument('function', help='Path to python function to execute.')
     parser.add_argument('path', nargs='?', default='.', help='Filesystem path to watch, defaults to current directory.')
@@ -96,7 +96,7 @@ def cli(*args_: str) -> None:
     hdlr = logging.StreamHandler()
     hdlr.setLevel(log_level)
     hdlr.setFormatter(logging.Formatter(fmt='[%(asctime)s] %(message)s', datefmt='%H:%M:%S'))
-    wg_logger = logging.getLogger('watchgod')
+    wg_logger = logging.getLogger('anychange')
     wg_logger.addHandler(hdlr)
     wg_logger.setLevel(log_level)
 
